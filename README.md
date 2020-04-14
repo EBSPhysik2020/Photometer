@@ -27,7 +27,7 @@
 * Um Software auf den RaspberryPI zu überspielen und einzurichten, sollte SSH verwendet werden. Dadurch spart man sich das Umschalten zwischen LCD-Display, auf dem nicht immer optimal gearbeitet werden kann, und dem HDMI-Output.
 ### Verwendung eines 3D-gedruckten Gehäuses
 In dem Ordner [Gehäuse](Gehäuse) befinden sich ein Modell für ein Gehäuse, welches mit einem 3D-Drucker gedruckt werden kann.
-## Contributors
+## Entwickler
 * Sören Seidel
 * Tom Schimansky
 * Frederik Mrozek
