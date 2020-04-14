@@ -1,0 +1,89 @@
+#measurementsBox {
+  padding: 0;
+}
+
+#tabContainer {
+  display: flex;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  box-shadow: 0 0.1rem 0.3rem #AAA;
+}
+
+.tabItem {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  white-space: nowrap;
+  padding: 0.5rem 0;
+  cursor: pointer;
+}
+
+.selected {
+  background-color: #EEE;
+  box-shadow: 0 0 0.5rem #AAA;
+}
+
+.tabItem:first-child {
+  border-top-left-radius: 0.5rem;
+}
+
+.tabItem:last-child {
+  border-top-right-radius: 0.5rem;
+}
+
+.tabItem:not(:first-child) {
+  border-left: 1px solid lightgray;
+}
+
+.tabItem p {
+  padding-left: 7.5%;
+}
+
+/*
+    Measurement list
+*/
+
+#listContainer {
+  padding: 0.5rem 0.5rem;
+}
+
+.measurement {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid lightgray;
+}
+
+.measurementIndex {
+  width: 9%;
+  padding-left: 1.5%;
+  font-size: 0.7rem;
+}
+
+.measurementValue {
+  width: 28%;
+  font-size: 0.9rem;
+}
+
+.measurementDelete {
+  width: 1rem;
+  padding-right: 1.5%;
+  cursor: pointer;
+}
+
+#noData {
+  padding: 1.5rem 0;
+}
+
+#listHeader {
+  padding: 0.75rem 0 0.5rem 0;
+  display: none;
+}
+
+.colorCircle {
+  padding: 0.2rem 0.75rem 0.2rem 0.5rem;
+}

@@ -1,0 +1,84 @@
+/*
+    Content
+*/
+
+.measurementValue {
+  width: 32.5%
+}
+
+.waveLength {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 35%
+}
+
+.noData {
+  padding: 1.5rem 0;
+}
+
+.listHeader {
+  padding: 1.5rem 0 0.5rem 0;
+  display: none;
+}
+
+.listHeader h6 {
+  font-size: 0.75rem;
+}
+
+.colorCircle {
+  padding: 0.2rem 0.75rem 0.2rem 0.5rem;
+}
+
+/* To Measurements Box */
+
+#linkMeasurements {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#linkMeasurements img {
+  vertical-align: top;
+  height: 1.25rem;
+  width: 1.25rem;
+  transform: rotate(270deg);
+}
+
+#linkMeasurements p, a {
+  text-decoration: none;
+  color: #000;
+}
+
+/* Color Box */
+
+.color {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid lightgray;
+}
+
+/* Reference Box */
+
+#concentrationBox {
+  display: none;
+  align-items: center;
+  margin: 1.25rem 0 0.25rem 0;
+}
+
+#concentrationBox h6 {
+  width: 35%;
+  font-size: 0.75rem;
+}
+
+#referenceList .reference {
+  border-top: 1px solid lightgray;
+}
+
+.reference {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+}

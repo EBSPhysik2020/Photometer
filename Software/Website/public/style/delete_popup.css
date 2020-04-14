@@ -1,0 +1,85 @@
+#popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1001;
+  background-color: rgba(0, 0, 0, 0.25);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+}
+
+#popupContainer {
+  box-sizing: border-box;
+  padding: 1rem 0.5rem;
+  max-width: 90%;
+  border-radius: 0.5rem;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 0 0.4rem #aaa;
+}
+
+#popupInfo {
+  display: flex;
+  align-items: center;
+  border-bottom: 0.5rem solid transparent;
+}
+
+#popupIcon {
+  width: 2rem;
+  margin-right: 0.5rem;
+}
+
+#popupButtonBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 0.5rem solid transparent;
+}
+
+#popupButtonBar button {
+  text-decoration: none;
+  cursor: pointer;
+  color: #000;
+  width: 45%;
+  padding: 0.5rem 0;
+  border: 1px solid #000;
+  border-radius: 10rem;
+
+  font-family: 'Raleway';
+
+  background-color: #FFF;
+
+  transition: background-color 0.2s;
+}
+
+#popupButtonBar button:hover {
+  background-color: #AAA;
+}
+
+#popupButtonBar button:focus {
+  outline: 0;
+}
+
+.checkBoxContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem;
+}
+
+#checkBox {
+  border: 1px solid black;
+  border-radius: 0.25rem;
+  padding: 0.125rem;
+  cursor: pointer;
+}
+
+#checkBoxTick {
+  visibility: hidden;
+  display: block;
+  width: 1rem;
+}

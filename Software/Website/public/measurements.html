@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="style/general.css">
+  <link rel="stylesheet" href="style/header.css">
+  <link rel="stylesheet" href="style/box.css">
+  <link rel="stylesheet" href="style/measurement.css">
+  <link rel="stylesheet" href="style/notification.css">
+  <link rel="stylesheet" href="style/delete_popup.css">
+  <title>Photometer - Messungen</title>
+</head>
+
+<body>
+
+  <div id="header">
+    <a href="dashboard.html"><img src="images/arrow_down.svg" alt=""></a>
+    <h1>Messungen</h1>
+    <img class="dummy" src="" alt="">
+  </div>
+
+  <div id="content">
+
+    <div class="box">
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div class="box" id="measurementsBox">
+
+      <div id="tabContainer">
+
+      </div>
+
+      <div id="listContainer">
+        <div id="listHeader">
+          <p class="measurementIndex"></p>
+          <h6 class="measurementValue">Intensität</h6>
+          <h6 class="measurementValue">Extinktion</h6>
+          <h6 class="measurementValue">Konzentration</h6>
+        </div>
+        <p id="noData">Keine Daten verfügbar.</p>
+        <div id="list">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="notificationOverlay">
+    <div id="notificationContainer">
+      <img src="images/error.svg" alt="" id="notificationError">
+      <img src="images/sync.svg" alt="" id="notificationSynchronize">
+      <img src="images/success.svg" alt="" id="notificationSuccess">
+      <img src="images/delete.svg" alt="" id="notificationDelete">
+      <p id="notificationMessage"></p>
+      <img src="images/close.svg" alt="" id="close" onclick="closeNotification()">
+    </div>
+  </div>
+
+  <div id="popupOverlay">
+    <div id="popupContainer">
+      <div id="popupInfo">
+        <img src="images/delete.svg" alt="" id="popupIcon">
+        <p id="popupText">Bist du dir sicher, dass die Messung gelöscht werden soll?</p>
+      </div>
+      <div class="checkBoxContainer">
+        <p>Auf Server löschen</p>
+        <div id="checkBox">
+          <img src="images/tick.svg" alt="" id="checkBoxTick">
+        </div>
+      </div>
+      <div id="popupButtonBar">
+        <button type="button" name="buttonDelete" onclick="confirmDeletion()">Löschen</button>
+        <button type="button" name="buttonCancel" onclick="cancel()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script type="text/javascript" src="js/Chart.js"></script>
+<script type="text/javascript" src="js/measurements/measurements_chart.js"></script>
+<script type="text/javascript" src="js/notifications.js"></script>
+<script type="text/javascript" src="js/measurements/delete_popup.js"></script>
+<script type="text/javascript" src="js/measurements/measurements_receiver.js"></script>
+</html>

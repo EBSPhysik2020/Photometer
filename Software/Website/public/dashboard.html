@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="style/general.css">
+  <link rel="stylesheet" href="style/header.css">
+  <link rel="stylesheet" href="style/box.css">
+  <link rel="stylesheet" href="style/dashboard.css">
+  <link rel="stylesheet" href="style/notification.css">
+  <title>Photometer - Dashboard</title>
+</head>
+
+<body>
+
+  <div id="header">
+    <a href="index.html"><img src="images/arrow_down.svg" alt=""></a>
+    <h1>Dashboard</h1>
+    <img class="dummy" src="" alt="">
+  </div>
+
+  <div id="content">
+
+    <a href="measurements.html">
+      <div class="box" id="linkMeasurements">
+        <img class="dummy" src="" alt="">
+        <p>Zu den Messungen</p>
+        <img src="images/arrow_down.svg" alt="">
+      </div>
+    </a>
+
+    <div class="box">
+      <h3>Leermessung</h3>
+      <div class="listHeader" id="colorHeader">
+        <h6 class="waveLength">Wellenlänge</h6>
+        <h6 class="measurementValue">Intensität</h6>
+      </div>
+      <p id="noColor" class="noData">Keine Daten verfügbar.</p>
+      <div id="colorList">
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Referenzmessung</h3>
+      <div id="concentrationBox">
+        <h6>Konzentration</h6>
+        <p class="measurementValue" id="concentration">10 mol/l</p>
+      </div>
+      <div class="listHeader" id="referenceHeader">
+        <h6 class="waveLength">Wellenlänge</h6>
+        <h6 class="measurementValue">Intensität</h6>
+        <h6 class="measurementValue">Koeffizient</h6>
+      </div>
+      <p id="noReference" class="noData">Keine Daten verfügbar.</p>
+      <div id="referenceList">
+      </div>
+    </div>
+
+    <div class="box">
+      <canvas id="chart"></canvas>
+    </div>
+
+  </div>
+
+  <div id="notificationOverlay">
+    <div id="notificationContainer">
+      <img src="images/error.svg" alt="" id="notificationError">
+      <img src="images/sync.svg" alt="" id="notificationSynchronize">
+      <img src="images/success.svg" alt="" id="notificationSuccess">
+      <img src="images/delete.svg" alt="" id="notificationDelete">
+      <p id="notificationMessage"></p>
+      <img src="images/close.svg" alt="" id="close" onclick="closeNotification()">
+    </div>
+  </div>
+
+</body>
+<script type="text/javascript" src="js/notifications.js"></script>
+<script type="text/javascript" src="js/dashboard/dashboard_receiver.js"></script>
+<script type="text/javascript" src="js/Chart.js"></script>
+<script type="text/javascript" src="js/dashboard/reference_chart.js"></script>
+</html>

@@ -1,0 +1,53 @@
+#notificationOverlay {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+#notificationContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  border: 2px solid red;
+  border-radius: 0.5rem;
+  width: 90%;
+  background-color: rgba(255, 200, 200, 0.9);
+  margin: 1rem auto;
+  padding: 1rem;
+
+  transform: translateY(0.5rem);
+  opacity: 0;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+#notificationContainer img {
+  height: 1rem;
+}
+
+#notificationContainer #close {
+  height: 0.75rem;
+  cursor: pointer;
+}
+
+#notificationContainer p {
+  color: black;
+}
+
+#notificationSynchronize {
+  animation: spin 2s linear infinite;
+}
+
+.dummy {
+  visibility: hidden;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotateZ(0);
+	}
+	100% {
+		transform: rotateZ(360deg);
+	}
+}

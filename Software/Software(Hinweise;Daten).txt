@@ -1,0 +1,55 @@
+Zum Einrichten:
+
+Die Default-Adresse muss von 0x39 zu 0x29 geändert werden.
+
+Die Adafruit TSL2561 muss installiert werden.
+
+sudo pip3 install adafruit-circuitpython-tsl2561
+
+I2C aktivieren
+
+Programme zum Aktivieren des LCD-Displays ausführen.
+
+----------------- ACHTUNG!!! -----------------
+Beim Ausführen des Programms, das wieder zum HDMI-Output wechselt, kann es passieren, dass der Raspberry Pi nicht mehr richtig bootet. Das ist bei uns passiert und wir mussten alles auf dem Photometer neu einrichten.
+
+Danach habe wir nach jedem wichtigen Schritt Backups gemacht.
+----------------------------------------------
+
+
+
+
+Passphrase:	ThePhotometerPassword
+
+IP to connect: 192.168.4.1. (für Website Port: 52525)
+Das booten dauert ca. 2 min.
+
+
+
+
+
+WLAN-Hotspot:
+
+Rückgängig machen:
+/etc/dhcpcd.conf    ->    interface wlan0... auskommentieren
+sudo systemctl stop hostapd
+sudo systemctl stop dnsmasq
+(sudo systemctl reload dnsmasq)
+sudo service dhcpcd restart
+
+
+Aktivieren:
+/etc/dhcpcd.conf    ->    interface wlan0... aktivieren
+sudo systemctl start hostapd
+sudo systemctl start dnsmasq
+(sudo systemctl reload dnsmasq)
+sudo service dhcpcd restart
+
+
+
+
+
+Der Autostart des Servers liegt in "~/.profile", sowie das Setzen der Umgebungsvariable "DISPLAY".
+
+Kopieren von Ordnern mit Inhalt per ssh von Mac auf Raspberry Pi:
+$ scp -r /Users/... pi@10.1.1.10:/path/to/copy/of/world2/
