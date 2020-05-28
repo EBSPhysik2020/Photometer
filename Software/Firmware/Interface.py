@@ -1,356 +1,399 @@
 #!/usr/bin/env python3
 
-#copyright Tom Schimansky 2020
+"""
+sudo apt update
+sudo apt-get install python-imaging
+sudo apt-get install python-imaging python-imaging-tk
+
+os.system("export DISPLAY=:0")
+"""
+
+GUI_DEBUG_MODE = False
+
 import os
-#os.system("export DISPLAY=:0")
-
-import tkinter, time
+import tkinter
+import time
+import socket
 from PIL import Image, ImageTk
-
 from tkinter import messagebox
 
-from ph_manage import *
+if not GUI_DEBUG_MODE:
+    from ph_manage import *
+    time.sleep(3)  # wait for server to start
 
-time.sleep(3)
+reference_number_string = ""
+measurement_state = "EMPTY"
 
-#import ph_MeasurementFirmware as MF
-import socket
+tk = tkinter.Tk()
+tk.title("Photometer")
+tk.attributes('-fullscreen', True)
 
-#sudo apt update
-#sudo apt-get install python-imaging
-#sudo apt-get install python-imaging python-imaging-tk
+if not GUI_DEBUG_MODE:
+    MAIN_PATH = "/home/pi/Photometer"
+else:
+    MAIN_PATH = os.path.dirname(os.path.abspath(__file__))
 
 HOST = 'localhost'
 PORT = 5000
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-connected = False
-while not connected:
-    try:
-        s.connect((HOST, PORT))
-        connected = True
-    except Exception as e:
-        pass
-
-running = True; first = True; t2 = time.time()
-tk = tkinter.Tk(); tk.title("Window Frame");
-tk.attributes('-fullscreen', True)
-
-FPS = 25 #1000
 WIDTH = tk.winfo_screenwidth()
 HEIGHT = tk.winfo_screenheight()
-#MAIN_PATH = os.path.dirname(os.path.abspath("__file__"))
-MAIN_PATH = "/home/pi/Photometer"
-print(MAIN_PATH)
+PERCENT = WIDTH / 1040
+Y_DIFF = 8
 
-PERCENT = WIDTH/1040
-MEASUREMENT = "EMPTY"
+GRAY_LIGHT = '#434243'
+GRAY_DARK = '#323232'
 
-REFERENCE_LABEL = ""
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+if not GUI_DEBUG_MODE:
+    connected = False
+    while not connected:
+        try:
+            server_socket.connect((HOST, PORT))
+            connected = True
+        except Exception as e:
+            pass
 
-def resize_image(image):
-    img = image.resize((int(image.size[0]*PERCENT), int(image.size[1]*PERCENT)), Image.ANTIALIAS)
-    return img
 
-start_img         = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/start.png")))
-start_pressed_img = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/start_pressed.png")))
-exit_img          = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/exit.png")))
-exit_pressed_img  = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/exit_pressed.png")))
-radio_green_img   = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/g.png")))
-radio_blue_img    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/b.png")))
-radio_img         = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/radio.png")))
-background_img    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/back.png")))
+class DigitButtonManager(object):
+    def __init__(self, image_manager, frame):
+        self.buttons = []
+        self.image_manager = image_manager
+        self.frame = frame
+        self.create_buttons()
 
-image_0    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/0.png")))
-image_1    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/1.png")))
-image_2    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/2.png")))
-image_3    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/3.png")))
-image_4    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/4.png")))
-image_5    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/5.png")))
-image_6    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/6.png")))
-image_7    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/7.png")))
-image_8    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/8.png")))
-image_9    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/9.png")))
+    def create_buttons(self):
+        self.buttons.append(self.create_button(0, x=250 * PERCENT, y=540 * PERCENT + Y_DIFF, string="0"))
+        self.buttons.append(self.create_button(1, x=450 * PERCENT, y=380 * PERCENT + Y_DIFF, string="1"))
+        self.buttons.append(self.create_button(2, x=250 * PERCENT, y=380 * PERCENT + Y_DIFF, string="2"))
+        self.buttons.append(self.create_button(3, x=50 * PERCENT, y=380 * PERCENT + Y_DIFF, string="3"))
+        self.buttons.append(self.create_button(4, x=450 * PERCENT, y=205 * PERCENT + Y_DIFF, string="4"))
+        self.buttons.append(self.create_button(5, x=250 * PERCENT, y=205 * PERCENT + Y_DIFF, string="5"))
+        self.buttons.append(self.create_button(6, x=50 * PERCENT, y=205 * PERCENT + Y_DIFF, string="6"))
+        self.buttons.append(self.create_button(7, x=450 * PERCENT, y=40 * PERCENT + Y_DIFF, string="7"))
+        self.buttons.append(self.create_button(8, x=250 * PERCENT, y=40 * PERCENT + Y_DIFF, string="8"))
+        self.buttons.append(self.create_button(9, x=50 * PERCENT, y=40 * PERCENT + Y_DIFF, string="9"))
 
-image_comma    = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/comma.png")))
-image_c        = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/c.png")))
+    def create_button(self, digit, x=0, y=0, string="") -> object:
+        button = tkinter.Button(self.frame, command=self.create_button_function(string))
+        button.config(image=self.image_manager.button_images[digit],
+                      width=str(self.image_manager.button_images[digit].width()),
+                      height=str(self.image_manager.button_images[digit].height()))
+        button.place(x=x, y=y)
+        return button
 
-ref_img        = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/ref.png")))
-enter_img      = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/enter.png")))
-ref_label_img  = ImageTk.PhotoImage(resize_image(Image.open(MAIN_PATH+"/images/ref_label.png")))
+    @staticmethod
+    def create_button_function(string):
+        def func():
+            global reference_number_string
+            reference_number_string += string
+            refresh_ref_label(reference_number_string)
 
-def on_closing(event=0):
-    global running
-    running = False
-    tk.destroy()
-tk.protocol("WM_DELETE_WINDOW", on_closing)
-tk.bind("<Command-q>", on_closing)
-tk.bind("<Command-w>", on_closing)
+        return func
 
-def keyEvent(event):
-    if event.keysym == "Return":
-        pass
-tk.bind("<Key>", keyEvent)
+
+class ImageManager(object):
+    def __init__(self):
+        self.button_images = []
+
+        for i in range(10):
+            self.button_images.append(ImageTk.PhotoImage(self.resize_image(
+                Image.open(MAIN_PATH + "/images/" + str(i) + ".png"))))
+
+        self.image_comma = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/comma.png")))
+        self.image_c = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/c.png")))
+
+        self.start_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/start.png")))
+        self.start_pressed_img = ImageTk.PhotoImage(self.resize_image(
+            Image.open(MAIN_PATH + "/images/start_pressed.png")))
+        self.exit_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/exit.png")))
+        self.exit_pressed_img = ImageTk.PhotoImage(self.resize_image(
+            Image.open(MAIN_PATH + "/images/exit_pressed.png")))
+        self.radio_green_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/g.png")))
+        self.radio_blue_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/b.png")))
+        self.radio_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/radio.png")))
+        self.background_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/back.png")))
+
+        self.ref_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/ref.png")))
+        self.enter_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/enter.png")))
+        self.ref_label_img = ImageTk.PhotoImage(self.resize_image(Image.open(MAIN_PATH + "/images/ref_label.png")))
+
+    @staticmethod
+    def resize_image(image):
+        new_image = image.resize((int(image.size[0] * PERCENT), int(image.size[1] * PERCENT)), Image.ANTIALIAS)
+        return new_image
+
 
 def start_button_press():
-    #label1.config(text="REFERENCE_LABEL: "+str(REFERENCE_LABEL))
-    start_button.config(image=start_pressed_img);tk.update()
+    start_button.config(image=image_manager.start_pressed_img)
     time.sleep(0.1)
-    start_button.config(image=start_img);tk.update()
+    start_button.config(image=image_manager.start_img)
 
-    text_label.config(text="MEASUREMENT IN PROGRESS...");tk.update()
+    text_label.config(text="measurement_state IN PROGRESS...")
 
-    data = []
-    data_INT = []
-    data_EXT = []
-    data_CON = []
-
-    if sum(cha == "." for cha in REFERENCE_LABEL) > 1 or REFERENCE_LABEL == ".":
-        text_label.config(text="REFERENCE VALUE INCORRECT!\nTOO MANY DOTS");tk.update()
+    if sum(cha == "." for cha in reference_number_string) > 1 or reference_number_string == ".":
+        text_label.config(text="REFERENCE VALUE INCORRECT!\n" +
+                               "TOO MANY DOTS")
         return
 
-    if MEASUREMENT == "EMPTY":
-        data, extinction = doEmptyMeasurement(s, "Leermessung")
-        s.sendall(('colors/255/0/0/635/'+str(round(data[0], 3))+'/0/255/0/525/'+str(round(data[1], 3))+'/0/0/255/471/'+str(round(data[2], 3))+'\n').encode())
-        text_label.config(text="EMPTY INTENSITIES:\n\n"+
-                          "  RED: "+str(round(data[0],3))+" Lux  \nGREEN: "+str(round(data[1], 3))+" Lux  \n BLUE: "+str(round(data[2], 3))+" Lux  ");tk.update()
+    if measurement_state == "EMPTY":
+        data, extinction = doEmptyMeasurement(server_socket, "Leermessung")
+        server_socket.sendall(('colors/255/0/0/635/' +
+                               str(round(data[0], 3)) + '/0/255/0/525/' +
+                               str(round(data[1], 3)) + '/0/0/255/471/' +
+                               str(round(data[2], 3)) + '\n').encode())
 
-    elif MEASUREMENT == "REFERENCE":
-        if REFERENCE_LABEL != "":
-            data_INT, data_EXT, data_COE, success = doReferenceMeasurement(float(str(REFERENCE_LABEL)), s, "Referenzmessung")
-            if success == True:
-                s.sendall(('reference/'+str(REFERENCE_LABEL)+'/'+str(round(data_INT[0], 3))+'/'+str(round(data_EXT[0], 3))+'/'+str(round(data_COE[0],3))+'/'+str(round(data_INT[1],3))+'/'+str(round(data_EXT[1], 3))+'/'+str(round(data_COE[1], 3))+'/'+str(round(data_INT[2], 3))+'/'+str(round(data_EXT[2], 3))+'/'+str(round(data_COE[2], 3))+'\n').encode())
-                text_label.config(text="REFERENCE INTENSITIES:\n\n"+
-                          "  RED: "+str(round(data_INT[0], 3))+" Lux  \nGREEN: "+str(round(data_INT[1], 3))+" Lux  \n BLUE: "+str(round(data_INT[2], 3))+" Lux  ");tk.update()
+        text_label.config(text="EMPTY INTENSITIES:\n\n" +
+                               "  RED: " + str(round(data[0], 3)) +
+                               " Lux  \nGREEN: " + str(round(data[1], 3)) +
+                               " Lux  \n BLUE: " + str(round(data[2], 3)) + " Lux  ")
+
+    elif measurement_state == "REFERENCE":
+        if reference_number_string != "":
+            data_INT, data_EXT, data_COE, success = doReferenceMeasurement(float(str(reference_number_string)),
+                                                                           server_socket,
+                                                                           "Referenzmessung")
+            if success:
+                server_socket.sendall(('reference/' +
+                                       str(reference_number_string) + '/' +
+                                       str(round(data_INT[0], 3)) + '/' +
+                                       str(round(data_EXT[0], 3)) + '/' +
+                                       str(round(data_COE[0], 3)) + '/' +
+                                       str(round(data_INT[1], 3)) + '/' +
+                                       str(round(data_EXT[1], 3)) + '/' +
+                                       str(round(data_COE[1], 3)) + '/' +
+                                       str(round(data_INT[2], 3)) + '/' +
+                                       str(round(data_EXT[2], 3)) + '/' +
+                                       str(round(data_COE[2], 3)) + '\n').encode())
+
+                text_label.config(text="REFERENCE INTENSITIES:\n\n" +
+                                       "  RED: " + str(round(data_INT[0], 3)) +
+                                       " Lux  \nGREEN: " + str(round(data_INT[1], 3)) +
+                                       " Lux  \n BLUE: " + str(round(data_INT[2], 3)) + " Lux  ")
             else:
-                text_label.config(text="MEASUREMENT FAILED!\n\nDO EMPTY MEASUREMENT AND\nENTER REFERENCE CONCENTRATION\nTHEN TRY AGAIN.");tk.update()
+                text_label.config(text="measurement_state FAILED!\n\n" +
+                                       "DO EMPTY measurement_state AND\n" +
+                                       "ENTER REFERENCE CONCENTRATION\n" +
+                                       "THEN TRY AGAIN.")
         else:
-            text_label.config(text="MEASUREMENT FAILED!\n\nDO EMPTY MEASUREMENT AND\nENTER REFERENCE CONCENTRATION\nTHEN TRY AGAIN.");tk.update()
+            text_label.config(text="measurement_state FAILED!\n\n" +
+                                   "DO EMPTY measurement_state AND\n" +
+                                   "ENTER REFERENCE CONCENTRATION\n" +
+                                   "THEN TRY AGAIN.")
 
-    elif MEASUREMENT == "NORMAL":
-        data_INT, data_EXT, data_CON, success = doOrdinaryMeasurement(s, "Normalmessung")
-        if success == True:
-            s.sendall(('measurements/'+str(round(data_INT[0], 3))+'/'+str(round(data_EXT[0], 3))+'/'+str(round(data_CON[0], 3))+'/'+str(round(data_INT[1], 3))+'/'+str(round(data_EXT[1], 3))+'/'+str(round(data_CON[1], 3))+'/'+str(round(data_INT[2], 3))+'/'+str(round(data_EXT[2], 3))+'/'+str(round(data_CON[2], 3))+'\n').encode())
-            text_label.config(text="CONCENTRATIONS:\n"+"  RED: "+str(round(data_CON[0], 3))+" mol/L  \nGREEN: "+str(round(data_CON[1], 3))+" mol/L  \n BLUE: "+str(round(data_CON[2], 3))+" mol/L  \nAVERAGE:         "+str(round(((data_CON[0]+data_CON[1]+data_CON[2])/3), 3))+" mol/L");tk.update()
+    elif measurement_state == "NORMAL":
+        data_INT, data_EXT, data_CON, success = doOrdinaryMeasurement(server_socket, "Normalmessung")
+        if success:
+            server_socket.sendall(('measurements/' +
+                                   str(round(data_INT[0], 3)) + '/' +
+                                   str(round(data_EXT[0], 3)) + '/' +
+                                   str(round(data_CON[0], 3)) + '/' +
+                                   str(round(data_INT[1], 3)) + '/' +
+                                   str(round(data_EXT[1], 3)) + '/' +
+                                   str(round(data_CON[1], 3)) + '/' +
+                                   str(round(data_INT[2], 3)) + '/' +
+                                   str(round(data_EXT[2], 3)) + '/' +
+                                   str(round(data_CON[2], 3)) + '\n').encode())
+
+            text_label.config(text="CONCENTRATIONS:\n" +
+                                   "  RED: " + str(round(data_CON[0], 3)) + " mol/L  \n" +
+                                   "GREEN: " + str(round(data_CON[1], 3)) + " mol/L  \n" +
+                                   " BLUE: " + str(round(data_CON[2], 3)) + " mol/L  \n" +
+                                   "AVERAGE:       " + str(
+                                       round(((data_CON[0] + data_CON[1] + data_CON[2]) / 3), 3)) + " mol/L")
         else:
-            text_label.config(text="MEASUREMENT FAILED!\n\nENTER REFERENCE CONCENTRATION\nAND DO REFERENCE MEASUREMENT.\nTHEN TRY AGAIN.");tk.update()
-
-    #data = MF.getMeasureIntensity()
+            text_label.config(text="measurement_state FAILED!\n\n" +
+                                   "ENTER REFERENCE CONCENTRATION\n" +
+                                   "AND DO REFERENCE measurement_state.\n" +
+                                   "THEN TRY AGAIN.")
     time.sleep(0.1)
 
-    pass
 
 def exit_button_press():
-    exit_button.config(image=exit_pressed_img);tk.update()
+    exit_button.config(image=image_manager.exit_pressed_img)
     time.sleep(0.1)
-    exit_button.config(image=exit_img);tk.update()
+    exit_button.config(image=image_manager.exit_img)
     shutdown = messagebox.askyesnocancel(title="EXIT", message="Do you want to shutdown?")
-    if shutdown: on_closing(); os.system("sudo shutdown -h now")
-    elif shutdown == False: on_closing()
+
+    if shutdown:
+        close_window()
+        os.system("sudo shutdown -h now")
+    elif not shutdown:
+        close_window()
+
 
 def ref_value_press():
     frame_1.pack_forget()
     frame_2.pack(side="top", fill="both", expand=True)
-    pass
 
-def press_0():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "0"
-    pass
-def press_1():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "1"
-    pass
-def press_2():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "2"
-    pass
-def press_3():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "3"
-    pass
-def press_4():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "4"
-    pass
-def press_5():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "5"
-    pass
-def press_6():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "6"
-    pass
-def press_7():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "7"
-    pass
-def press_8():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "8"
-    pass
-def press_9():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "9"
-    pass
+
 def comma_press():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL += "."
-    pass
+    global reference_number_string
+    reference_number_string += "."
+    refresh_ref_label(reference_number_string)
+
+
 def c_press():
-    global REFERENCE_LABEL
-    REFERENCE_LABEL = ""
-    pass
+    global reference_number_string
+    reference_number_string = ""
+    refresh_ref_label(reference_number_string)
+
+
+def refresh_ref_label(reference_string):
+    ref_label.config(text=reference_string)
 
 
 def enter_press():
     frame_2.pack_forget()
     frame_1.pack(side="top", fill="both", expand=True)
-    pass
 
-def button_press_1():
-    global MEASUREMENT
-    MEASUREMENT = "EMPTY"
-    button1.config(image=radio_blue_img)
-    button2.config(image=radio_green_img)
-    button3.config(image=radio_green_img)
-    pass
 
-def button_press_2():
-    global MEASUREMENT
-    MEASUREMENT = "REFERENCE"
-    button1.config(image=radio_green_img)
-    button2.config(image=radio_blue_img)
-    button3.config(image=radio_green_img)
-    pass
+def radio_button_press_1():
+    global measurement_state
+    measurement_state = "EMPTY"
+    radio_button_1.config(image=image_manager.radio_blue_img)
+    radio_button_2.config(image=image_manager.radio_green_img)
+    radio_button_3.config(image=image_manager.radio_green_img)
 
-def button_press_3():
-    global MEASUREMENT
-    MEASUREMENT = "NORMAL"
-    button1.config(image=radio_green_img)
-    button2.config(image=radio_green_img)
-    button3.config(image=radio_blue_img)
-    pass
 
-frame_1 = tkinter.Frame(tk, width = WIDTH, height = HEIGHT)
+def radio_button_press_2():
+    global measurement_state
+    measurement_state = "REFERENCE"
+    radio_button_1.config(image=image_manager.radio_green_img)
+    radio_button_2.config(image=image_manager.radio_blue_img)
+    radio_button_3.config(image=image_manager.radio_green_img)
+
+
+def radio_button_press_3():
+    global measurement_state
+    measurement_state = "NORMAL"
+    radio_button_1.config(image=image_manager.radio_green_img)
+    radio_button_2.config(image=image_manager.radio_green_img)
+    radio_button_3.config(image=image_manager.radio_blue_img)
+
+
+def close_window(event=0):
+    tk.destroy()
+
+
+tk.protocol("WM_DELETE_WINDOW", close_window)
+tk.bind("<Command-q>", close_window)
+tk.bind("<Command-w>", close_window)
+
+
+# ---------- FRAME 1 -----------
+
+frame_1 = tkinter.Frame(tk, width=WIDTH, height=HEIGHT)
 frame_1.pack(side="top", fill="both", expand=True)
 
-frame_2 = tkinter.Frame(tk, width = WIDTH, height = HEIGHT)
+frame_2 = tkinter.Frame(tk, width=WIDTH, height=HEIGHT)
 
-label1 = tkinter.Label(master=frame_1, bg='gray89')
-label1.place(x=20,y=20)
+# load all images into the image_manager:
+image_manager = ImageManager()
 
-start_button = tkinter.Button(frame_1, command=start_button_press)
-start_button.config(image=start_img, width=str(start_img.width()), height=str(start_img.height()))
-start_button.place(x=33*PERCENT, y= 36*PERCENT)
+start_button = tkinter.Button(master=frame_1,
+                              command=start_button_press,
+                              image=image_manager.start_img,
+                              width=str(image_manager.start_img.width()),
+                              height=str(image_manager.start_img.height()))
+start_button.place(x=33 * PERCENT, y=36 * PERCENT)
 
-exit_button = tkinter.Button(frame_1, command=exit_button_press)
-exit_button.config(image=exit_img, width=str(exit_img.width()), height=str(exit_img.height()))
-exit_button.place(x=33*PERCENT, y= 240*PERCENT)
+exit_button = tkinter.Button(master=frame_1,
+                             command=exit_button_press,
+                             image=image_manager.exit_img,
+                             width=str(image_manager.exit_img.width()),
+                             height=str(image_manager.exit_img.height()))
+exit_button.place(x=33 * PERCENT, y=240 * PERCENT)
 
-ref_button = tkinter.Button(frame_1, command=ref_value_press)
-ref_button.config(image=ref_img, width=str(ref_img.width()), height=str(ref_img.height()))
-ref_button.place(x=288*PERCENT, y= 240*PERCENT)
+ref_button = tkinter.Button(master=frame_1,
+                            command=ref_value_press,
+                            image=image_manager.ref_img,
+                            width=str(image_manager.ref_img.width()),
+                            height=str(image_manager.ref_img.height()))
+ref_button.place(x=288 * PERCENT, y=240 * PERCENT)
 
-radio_label = tkinter.Label(frame_1)
-radio_label.config(image=radio_img, width=str(radio_img.width()), height=str(radio_img.height()))
-radio_label.place(x=544*PERCENT, y= 37*PERCENT) # y was before 28
+radio_label = tkinter.Label(master=frame_1,
+                            image=image_manager.radio_img,
+                            width=str(image_manager.radio_img.width()),
+                            height=str(image_manager.radio_img.height()))
+radio_label.place(x=544 * PERCENT, y=37 * PERCENT)
 
-button1 = tkinter.Button(frame_1, command=button_press_1, highlightthickness=0, bg='#434243')
-button1.config(image=radio_blue_img, width=str(radio_blue_img.width()), height=str(radio_blue_img.height()))
-button1.place(x=573*PERCENT, y= 66*PERCENT)
+radio_button_1 = tkinter.Button(master=frame_1,
+                                command=radio_button_press_1,
+                                highlightthickness=0,
+                                bg=GRAY_LIGHT,
+                                image=image_manager.radio_blue_img,
+                                width=str(image_manager.radio_blue_img.width()),
+                                height=str(image_manager.radio_blue_img.height()))
+radio_button_1.place(x=573 * PERCENT, y=66 * PERCENT)
 
-button2 = tkinter.Button(frame_1, command=button_press_2, highlightthickness=0, bg='#434243')
-button2.config(image=radio_green_img, width=str(radio_green_img.width()), height=str(radio_green_img.height()))
-button2.place(x=573*PERCENT, y= 165*PERCENT)
+radio_button_2 = tkinter.Button(master=frame_1,
+                                command=radio_button_press_2,
+                                highlightthickness=0,
+                                bg=GRAY_LIGHT,
+                                image=image_manager.radio_green_img,
+                                width=str(image_manager.radio_green_img.width()),
+                                height=str(image_manager.radio_green_img.height()))
+radio_button_2.place(x=573 * PERCENT, y=165 * PERCENT)
 
-button3 = tkinter.Button(frame_1, command=button_press_3, highlightthickness=0, bg='#434243')
-button3.config(image=radio_green_img, width=str(radio_green_img.width()), height=str(radio_green_img.height()))
-button3.place(x=573*PERCENT, y= 266*PERCENT)
+radio_button_3 = tkinter.Button(master=frame_1,
+                                command=radio_button_press_3,
+                                highlightthickness=0,
+                                bg=GRAY_LIGHT,
+                                image=image_manager.radio_green_img,
+                                width=str(image_manager.radio_green_img.width()),
+                                height=str(image_manager.radio_green_img.height()))
+radio_button_3.place(x=573 * PERCENT, y=266 * PERCENT)
 
-textfield_label = tkinter.Label(frame_1)
-textfield_label.config(image=background_img,width=str(background_img.width()),height=str(background_img.height()))
-textfield_label.place(x=35*PERCENT, y= 408*PERCENT)
+textfield_label = tkinter.Label(master=frame_1,
+                                image=image_manager.background_img,
+                                width=str(image_manager.background_img.width()),
+                                height=str(image_manager.background_img.height()))
+textfield_label.place(x=35 * PERCENT, y=408 * PERCENT)
 
-text_label = tkinter.Label(frame_1, bg='#434243', font=("Avenir Next", int(25*PERCENT)), fg="white", width=40 )
-text_label.place(x=135*PERCENT, y= 425*PERCENT)  #x was before 99
+text_label = tkinter.Label(master=frame_1,
+                           bg=GRAY_LIGHT,
+                           font=("Avenir Next", int(25 * PERCENT)),
+                           fg="white",
+                           width=40)
+text_label.place(x=135 * PERCENT, y=425 * PERCENT)
 
-#---------- FRAME 2
+# ---------- FRAME 2 -----------
 
-yd = -8
+# create digit buttons for number input:
+digit_button_manager = DigitButtonManager(image_manager, frame_2)
 
-enter_button = tkinter.Button(frame_2, command=enter_press)
-enter_button.config(image=enter_img, width=str(enter_img.width()), height=str(enter_img.height()))
-enter_button.place(x=640*PERCENT, y= 540*PERCENT+yd)
+enter_button = tkinter.Button(master=frame_2,
+                              command=enter_press,
+                              image=image_manager.enter_img,
+                              width=str(image_manager.enter_img.width()),
+                              height=str(image_manager.enter_img.height()))
+enter_button.place(x=640 * PERCENT, y=540 * PERCENT + Y_DIFF)
 
-ref_label_i = tkinter.Label(frame_2)
-ref_label_i.config(image=ref_label_img ,width=str(ref_label_img.width()) ,height=str(ref_label_img.height()))
-ref_label_i.place(x=640*PERCENT, y= 40*PERCENT+yd)
+ref_label_i = tkinter.Label(master=frame_2,
+                            image=image_manager.ref_label_img,
+                            width=str(image_manager.ref_label_img.width()),
+                            height=str(image_manager.ref_label_img.height()))
+ref_label_i.place(x=640 * PERCENT, y=40 * PERCENT + Y_DIFF)
 
-ref_label = tkinter.Label(frame_2, bg='#323232', font=("Courier", int(52*PERCENT)), fg="white", width=7 )
-ref_label.place(x=669.5*PERCENT, y= 73*PERCENT+yd)
+ref_label = tkinter.Label(master=frame_2,
+                          bg=GRAY_DARK,
+                          font=("Courier", int(52 * PERCENT)),
+                          fg="white",
+                          width=7)
+ref_label.place(x=669.5 * PERCENT, y=73 * PERCENT + Y_DIFF)
 
-button_0 = tkinter.Button(frame_2, command=press_0)
-button_0.config(image=image_0, width=str(image_0.width()), height=str(image_0.height()))
-button_0.place(x=250*PERCENT, y= 540*PERCENT+yd)
-button_1 = tkinter.Button(frame_2, command=press_1)
-button_1.config(image=image_1, width=str(image_1.width()), height=str(image_1.height()))
-button_1.place(x=450*PERCENT, y= 380*PERCENT+yd)
-button_2 = tkinter.Button(frame_2, command=press_2)
-button_2.config(image=image_2, width=str(image_2.width()), height=str(image_2.height()))
-button_2.place(x=250*PERCENT, y= 380*PERCENT+yd)
-button_3 = tkinter.Button(frame_2, command=press_3)
-button_3.config(image=image_3, width=str(image_3.width()), height=str(image_3.height()))
-button_3.place(x=50*PERCENT, y=380*PERCENT+yd)
-button_4 = tkinter.Button(frame_2, command=press_4)
-button_4.config(image=image_4, width=str(image_4.width()), height=str(image_4.height()))
-button_4.place(x=450*PERCENT, y= 205*PERCENT+yd)
-button_5 = tkinter.Button(frame_2, command=press_5)
-button_5.config(image=image_5, width=str(image_5.width()), height=str(image_5.height()))
-button_5.place(x=250*PERCENT, y= 205*PERCENT+yd)
-button_6 = tkinter.Button(frame_2, command=press_6)
-button_6.config(image=image_6, width=str(image_6.width()), height=str(image_6.height()))
-button_6.place(x=50*PERCENT, y= 205*PERCENT+yd)
-button_7 = tkinter.Button(frame_2, command=press_7)
-button_7.config(image=image_7, width=str(image_7.width()), height=str(image_7.height()))
-button_7.place(x=450*PERCENT, y= 40*PERCENT+yd)
-button_8 = tkinter.Button(frame_2, command=press_8)
-button_8.config(image=image_8, width=str(image_8.width()), height=str(image_8.height()))
-button_8.place(x=250*PERCENT, y= 40*PERCENT+yd)
-button_9 = tkinter.Button(frame_2, command=press_9)
-button_9.config(image=image_9, width=str(image_9.width()), height=str(image_9.height()))
-button_9.place(x=50*PERCENT, y= 40*PERCENT+yd)
-button_comma = tkinter.Button(frame_2, command=comma_press)
-button_comma.config(image=image_comma, width=str(image_comma.width()), height=str(image_comma.height()))
-button_comma.place(x=50*PERCENT, y= 540*PERCENT+yd)
-button_c = tkinter.Button(frame_2, command=c_press)
-button_c.config(image=image_c, width=str(image_c.width()), height=str(image_c.height()))
-button_c.place(x=450*PERCENT, y= 540*PERCENT+yd)
+button_comma = tkinter.Button(master=frame_2,
+                              command=comma_press,
+                              image=image_manager.image_comma,
+                              width=str(image_manager.image_comma.width()),
+                              height=str(image_manager.image_comma.height()))
+button_comma.place(x=50 * PERCENT, y=540 * PERCENT + Y_DIFF)
 
-while True:
-    t1 = time.time()
-    a_fps = round(1/(t1-t2))
-    t2 = time.time()
-    if ((1/FPS)-(t1-t2))>0: time.sleep((1/FPS)-(t1-t2))
+button_c = tkinter.Button(master=frame_2,
+                          command=c_press,
+                          image=image_manager.image_c,
+                          width=str(image_manager.image_c.width()),
+                          height=str(image_manager.image_c.height()))
+button_c.place(x=450 * PERCENT, y=540 * PERCENT + Y_DIFF)
 
-    if running == True:
-        try:
-            label1.config(text="FPS: "+str(a_fps))
-
-            ref_label.config(text=REFERENCE_LABEL)
-
-            ## Code here
-
-            if first == True:
-                ## Window initialisation
-
-                first = False
-            pass
-            tk.update()
-        except Exception as e:
-            print("-- missed frame --")
-            print(e)
-            time.sleep(1/FPS)
-    else:
-        print("-- program ended --")
-        break
+tk.mainloop()
