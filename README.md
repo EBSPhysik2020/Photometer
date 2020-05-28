@@ -23,10 +23,10 @@
 * LCD-Display: Damit das Bild auf dem LCD-Display statt dem HDMI-Output ausgegeben wird, muss ein entsprechendes Programm ausgeführt werden (s. Referenzen). Dieser Schritt war eine häufige Ursache für Systemabstürze.
 * LED: Ein möglicher Schaltplan für die LED befindet sich in diesem Ordner: [Schaltplan LED](LED)
 ### Verwendung der Software
-* Um die Bedienung des Photometers möglichst einfach zu gestalten, sollten die Software automatisch nach dem Booten gestartet werden. Dazu wird sie in die Datei *~/.profile* eingetragen. Außerdem wird in dieser Datei die Umgebungsvariable *DISPLAY* gesetzt.
-* Um Software auf den RaspberryPI zu überspielen und einzurichten, sollte SSH verwendet werden. Dadurch spart man sich das Umschalten zwischen LCD-Display, auf dem nicht immer optimal gearbeitet werden kann, und dem HDMI-Output.
+* Um die Bedienung des Photometers möglichst einfach zu gestalten, sollten die Software nach dem Booten automatisch gestartet werden. Dazu wird sie in die Datei *~/.profile* eingetragen. Außerdem wird in dieser Datei die Umgebungsvariable *DISPLAY* gesetzt.
+* Um Software auf den RaspberryPI zu überspielen und einzurichten, sollte SSH verwendet werden. Dadurch spart man sich das Umschalten zwischen dem LCD-Display, auf dem nicht immer optimal gearbeitet werden kann, und dem HDMI-Output.
 ### Verwendung eines 3D-gedruckten Gehäuses
-In dem Ordner [Gehäuse](Gehäuse) befinden sich ein Modell für ein Gehäuse, welches mit einem 3D-Drucker gedruckt werden kann.
+In dem Ordner [Gehäuse](Gehäuse) befindet sich ein Modell für ein Gehäuse, welches mit einem 3D-Drucker gedruckt werden kann.
 ## Entwickler
 * Sören Seidel
 * Tom Schimansky
